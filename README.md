@@ -1,22 +1,22 @@
 # 我的博客系统
 
-一个现代化的博客系统，使用 Next.js 14 和 Supabase 构建。
+一个现代化的博客系统，使用 Next.js 14 和 Supabase 构建，支持评论、点赞和后台管理。
 
 ## 功能特性
 
-- :white_check_mark: 响应式博客界面
-- :white_check_mark: Markdown 文章编辑
-- :white_check_mark: 评论系统
-- :white_check_mark: 点赞功能
-- :white_check_mark: 后台文章管理
-- :white_check_mark: 用户认证系统
-- :white_check_mark: 静态导出，支持 GitHub Pages 部署
+- 响应式博客界面
+- Markdown 文章编辑与语法高亮
+- 评论系统
+- 点赞功能
+- 后台文章管理
+- 用户认证系统
+- GitHub Actions 自动部署
 
 ## 技术栈
 
 - **前端**: Next.js 14, React 18, Tailwind CSS
 - **后端**: Supabase (PostgreSQL, Auth)
-- **部署**: GitHub Pages
+- **部署**: GitHub Pages (自动部署)
 
 ## 快速开始
 
@@ -35,46 +35,48 @@ npm install
 
 ### 3. 配置 Supabase
 
-1. 在 [Supabase](https://supabase.com) 创建一个新项目
-2. 在 SQL Editor 中运行 `supabase/schema.sql` 脚本
-3. 复制 `.env.example` 为 `.env.local`
-4. 填写你的 Supabase URL 和 Anon Key
+1. 在 [Supabase](https://supabase.com) 创建新项目
+2. 在 SQL Editor 中运行 `supabase/schema.sql`
+3. 创建 `.env.local`：
+   ```env
+   NEXT_PUBLIC_SUPABASE_URL=你的项目URL
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=你的anon密钥
+   ```
 
-### 4. 启动开发服务器
+详细步骤请查看 [DEPLOY.md](./DEPLOY.md)
+
+### 4. 本地运行
 
 ```bash
 npm run dev
 ```
 
-打开 [http://localhost:3000](http://localhost:3000) 查看效果。
-
-### 5. 构建部署
-
-```bash
-npm run build
-```
-
-构建产物在 `out` 目录，可以部署到 GitHub Pages。
+访问 http://localhost:3000
 
 ## 管理后台
 
-访问 `/admin/login` 登录管理后台。
+- 访问 `/admin/login` 登录
+- 首次使用需在 Supabase 创建用户
 
-首次使用需要：
-1. 在 Supabase 控制台创建一个用户
-2. 使用该用户邮箱密码登录
+## 自动部署
+
+推送到 `main` 分支自动触发 GitHub Actions 部署到 GitHub Pages。
+
+首次部署需要：
+1. 在仓库 Settings > Pages 启用 GitHub Pages
+2. 添加 Secrets: `NEXT_PUBLIC_SUPABASE_URL` 和 `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 
 ## 项目结构
 
 ```
-src/
-├── app/
-│   ├── admin/          # 管理后台页面
-│   ├── blog/           # 博客页面
-│   └── page.tsx        # 首页
-├── components/         # React 组件
-├── lib/               # 工具函数
-└── types/             # TypeScript 类型
+blog/
+├── .github/workflows/    # CI/CD 部署脚本
+├── scripts/             # 设置脚本
+├── src/app/            # Next.js 页面
+│   ├── admin/          # 管理后台
+│   └── blog/           # 博客页面
+├── supabase/          # 数据库结构
+└── public/             # 静态资源
 ```
 
 ## License
