@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 
@@ -14,7 +14,7 @@ interface Post {
   published: boolean
 }
 
-export default function EditPost() {
+function EditPostContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const postId = searchParams?.get('id')
@@ -186,5 +186,13 @@ export default function EditPost() {
         </div>
       </form>
     </div>
+  )
+}
+
+export default function EditPost() {
+  return (
+    <Suspense fallback={<div className="text-center py-12">加载中...</div>}>
+      <EditPostContent />
+    </Suspense>
   )
 }
