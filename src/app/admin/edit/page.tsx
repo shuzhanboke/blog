@@ -1,8 +1,8 @@
-import { supabase } from '@/lib/supabase'
+'use client'
 
-export async function generateStaticParams() {
-  return []
-}
+import { useEffect, useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { supabase } from '@/lib/supabase'
 
 interface Post {
   id: string
@@ -16,8 +16,8 @@ interface Post {
 
 export default function EditPost() {
   const router = useRouter()
-  const params = useParams()
-  const postId = params?.id as string
+  const searchParams = useSearchParams()
+  const postId = searchParams?.get('id')
 
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)

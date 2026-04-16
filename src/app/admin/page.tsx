@@ -131,7 +131,7 @@ export default function AdminDashboard() {
                 <td className="px-6 py-4 text-right">
                   <div className="flex justify-end gap-2">
                     <Link
-                      href={`/admin/edit/${post.id}`}
+                      href={`/admin/edit?id=${post.id}`}
                       className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
                     >
                       <Edit size={18} />
