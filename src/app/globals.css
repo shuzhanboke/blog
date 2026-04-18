@@ -1,97 +1,210 @@
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
+  --bg-primary: #0a0a0f;
+  --bg-secondary: #12121a;
+  --bg-card: #1a1a24;
+  --text-primary: #e4e4e7;
+  --text-secondary: #a1a1aa;
+  --accent-primary: #8b5cf6;
+  --accent-secondary: #6366f1;
+  --accent-gradient: linear-gradient(135deg, #8b5cf6 0%, #6366f1 50%, #ec4899 100%);
+  --border-color: #27272a;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
+@layer base {
+  body {
+    @apply bg-[#0a0a0f] text-zinc-200 antialiased;
+    font-family: 'Fira Code', monospace;
+    background-image: 
+      radial-gradient(ellipse at top, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
+      radial-gradient(ellipse at bottom right, rgba(139, 92, 246, 0.1) 0%, transparent 50%);
+    min-height: 100vh;
   }
 }
 
-body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+@layer components {
+  .gradient-text {
+    @apply bg-clip-text text-transparent;
+    background-image: var(--accent-gradient);
+  }
+
+  .glass-card {
+    @apply relative overflow-hidden;
+    background: rgba(26, 26, 36, 0.6);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+  }
+
+  .glass-card::before {
+    content: '';
+    @apply absolute inset-0;
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, transparent 50%);
+    pointer-events: none;
+  }
+
+  .glow-button {
+    @apply relative px-6 py-3 rounded-lg font-semibold transition-all duration-300;
+    background: var(--accent-gradient);
+    background-size: 200% 200%;
+    animation: gradient-shift 3s ease infinite;
+  }
+
+  .glow-button:hover {
+    @apply shadow-lg;
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.5), 0 0 40px rgba(99, 102, 241, 0.3);
+    transform: translateY(-2px);
+  }
+
+  .code-block {
+    @apply relative rounded-lg overflow-hidden;
+    background: linear-gradient(135deg, #1e1e2e 0%, #16161f 100%);
+    border: 1px solid #2d2d3a;
+  }
+
+  .code-block::before {
+    content: '● ● ●';
+    @apply absolute top-2 left-4 text-xs leading-none;
+    letter-spacing: 4px;
+  }
+
+  .nav-link {
+    @apply relative text-zinc-400 hover:text-white transition-colors duration-200;
+  }
+
+  .nav-link::after {
+    content: '';
+    @apply absolute -bottom-1 left-0 w-0 h-0.5;
+    background: var(--accent-gradient);
+    transition: width 0.3s ease;
+  }
+
+  .nav-link:hover::after {
+    @apply w-full;
+  }
+
+  .post-card {
+    @apply glass-card rounded-xl p-6 transition-all duration-300;
+  }
+
+  .post-card:hover {
+    @apply -translate-y-1;
+    border-color: rgba(139, 92, 246, 0.4);
+    box-shadow: 0 8px 40px rgba(139, 92, 246, 0.2);
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .animate-fade-in {
+    animation: fade-in 0.5s ease-out;
+  }
+
+  .animate-slide-up {
+    animation: slide-up 0.5s ease-out;
+  }
+}
+
+@keyframes gradient-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slide-up {
+  from { 
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .prose {
-  max-width: 100%;
+  @apply max-w-none;
 }
 
 .prose h1 {
-  font-size: 2rem;
-  font-weight: bold;
-  margin-top: 2rem;
-  margin-bottom: 1rem;
+  @apply text-3xl font-bold mb-6 mt-8 text-white;
 }
 
 .prose h2 {
-  font-size: 1.5rem;
-  font-weight: bold;
-  margin-top: 1.5rem;
-  margin-bottom: 0.75rem;
+  @apply text-2xl font-semibold mb-4 mt-6 text-white;
+}
+
+.prose h3 {
+  @apply text-xl font-semibold mb-3 mt-4 text-zinc-100;
 }
 
 .prose p {
-  margin-bottom: 1rem;
-  line-height: 1.75;
+  @apply mb-4 leading-relaxed text-zinc-300;
+}
+
+.prose a {
+  @apply text-purple-400 hover:text-purple-300 underline underline-offset-4;
+}
+
+.prose ul {
+  @apply list-disc list-inside mb-4 space-y-2 text-zinc-300;
+}
+
+.prose ol {
+  @apply list-decimal list-inside mb-4 space-y-2 text-zinc-300;
 }
 
 .prose pre {
-  background-color: #1e1e1e;
-  color: #d4d4d4;
-  padding: 1rem;
-  border-radius: 0.5rem;
-  overflow-x: auto;
-  margin: 1rem 0;
+  @apply code-block p-4 mt-4 mb-6 overflow-x-auto;
 }
 
 .prose code {
-  background-color: #f0f0f0;
-  padding: 0.125rem 0.25rem;
-  border-radius: 0.25rem;
-  font-family: monospace;
+  @apply font-mono text-sm;
+  background: rgba(139, 92, 246, 0.15);
+  @apply px-1.5 py-0.5 rounded text-purple-300;
 }
 
 .prose pre code {
-  background-color: transparent;
-  padding: 0;
-}
-
-.prose img {
-  max-width: 100%;
-  height: auto;
-  border-radius: 0.5rem;
-  margin: 1rem 0;
+  @apply bg-transparent p-0 text-zinc-200;
 }
 
 .prose blockquote {
-  border-left: 4px solid #3b82f6;
-  padding-left: 1rem;
-  margin: 1rem 0;
-  font-style: italic;
-  color: #666;
+  @apply border-l-4 border-purple-500 pl-4 my-4 italic text-zinc-400;
 }
 
-@media (prefers-color-scheme: dark) {
-  .prose code {
-    background-color: #2d2d2d;
-    color: #e0e0e0;
-  }
+.prose img {
+  @apply max-w-full h-auto rounded-lg my-6;
+}
 
-  .prose blockquote {
-    color: #aaa;
-  }
+.prose strong {
+  @apply text-white font-semibold;
+}
+
+.prose hr {
+  @apply border-zinc-800 my-8;
+}
+
+.prose table {
+  @apply w-full my-6 border-collapse;
+}
+
+.prose th,
+.prose td {
+  @apply border border-zinc-700 px-4 py-2 text-left;
+}
+
+.prose th {
+  @apply bg-zinc-800 font-semibold text-white;
 }

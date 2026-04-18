@@ -6,9 +6,10 @@ import ReactMarkdown from 'react-markdown'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { oneDark } from 'react-syntax-highlighter/dist/cjs/styles/prism'
 import { supabase } from '@/lib/supabase'
-import { Heart, MessageCircle, Send } from 'lucide-react'
+import { Heart, MessageCircle, Send, ArrowLeft } from 'lucide-react'
 import { format } from 'date-fns'
 import { zhCN } from 'date-fns/locale'
+import Link from 'next/link'
 
 interface Comment {
   id: string
@@ -150,19 +151,40 @@ export default function BlogPost() {
   }
 
   if (loading) {
-    return <div className="text-center py-12">加载中...</div>
+    return (
+      <div className="text-center py-20">
+        <div className="animate-spin w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full mx-auto"></div>
+        <p className="text-zinc-500 mt-4">加载中...</p>
+      </div>
+    )
   }
 
   if (!post) {
-    return <div className="text-center py-12">文章不存在</div>
+    return (
+      <div className="text-center py-20">
+        <div className="text-6xl mb-4">404</div>
+        <p className="text-zinc-500">文章不存在</p>
+      </div>
+    )
   }
 
   return (
-    <article className="max-w-3xl mx-auto">
+    <article className="max-w-3xl mx-auto animate-fade-in">
+      <Link
+        href="/blog"
+        className="inline-flex items-center gap-2 text-zinc-500 hover:text-purple-400 mb-8 transition"
+      >
+        <ArrowLeft size={16} />
+        返回文章列表
+      </Link>
+
       <header className="mb-8">
-        <h1 className="text-4xl font-bold mb-4">{post.title}</h1>
-        <div className="text-gray-500">
-          {format(new Date(post.created_at), 'PPP', { locale: zhCN })}
+        <h1 className="text-4xl font-bold mb-4 gradient-text">{post.title}</h1>
+        <div className="flex items-center gap-4 text-zinc-500 text-sm">
+          <span className="flex items-center gap-2">
+            <span>📅</span>
+            {format(new Date(post.created_at), 'PPP', { locale: zhCN })}
+          </span>
         </div>
       </header>
 
@@ -170,11 +192,11 @@ export default function BlogPost() {
         <img
           src={post.cover_image}
           alt={post.title}
-          className="w-full h-64 object-cover rounded-lg mb-8"
+          className="w-full h-64 object-cover rounded-xl mb-8"
         />
       )}
 
-      <div className="prose prose-lg mb-12">
+      <div className="prose prose-invert prose-lg mb-12">
         <ReactMarkdown
           components={{
             code({ node, className, children, ...props }) {
@@ -200,26 +222,28 @@ export default function BlogPost() {
         </ReactMarkdown>
       </div>
 
-      <div className="flex items-center gap-6 py-6 border-t border-b border-gray-200 mb-12">
+      <div className="flex items-center gap-6 py-6 border-y border-zinc-800 mb-12">
         <button
           onClick={handleLike}
           className={`flex items-center gap-2 px-4 py-2 rounded-full transition ${
             hasLiked
-              ? 'bg-red-100 text-red-600'
-              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              ? 'bg-red-500/20 text-red-400 border border-red-500/50'
+              : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
           }`}
         >
-          <Heart className={hasLiked ? 'fill-current' : ''} />
-          <span>{likesCount} 点赞</span>
+          <Heart className={hasLiked ? 'fill-current' : ''} size={18} />
+          <span>{likesCount}</span>
         </button>
-        <div className="flex items-center gap-2 text-gray-600">
-          <MessageCircle />
+        <div className="flex items-center gap-2 text-zinc-400">
+          <MessageCircle size={18} />
           <span>{comments.length} 评论</span>
         </div>
       </div>
 
       <section className="mb-12">
-        <h3 className="text-2xl font-bold mb-6">评论</h3>
+        <h3 className="text-2xl font-bold mb-6">
+          <span className="gradient-text">评论</span>
+        </h3>
 
         <form onSubmit={handleComment} className="mb-8 space-y-4">
           <input
@@ -227,42 +251,42 @@ export default function BlogPost() {
             placeholder="你的名字"
             value={authorName}
             onChange={(e) => setAuthorName(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            className="w-full px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-lg focus:border-purple-500 focus:outline-none transition"
             required
           />
           <textarea
             placeholder="写下你的评论..."
             value={commentContent}
             onChange={(e) => setCommentContent(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent min-h-[100px]"
+            className="w-full px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-lg focus:border-purple-500 focus:outline-none min-h-[100px] transition"
             required
           />
           <button
             type="submit"
             disabled={submitting}
-            className="flex items-center gap-2 bg-primary-600 text-white px-6 py-2 rounded-lg hover:bg-primary-700 disabled:opacity-50"
+            className="glow-button flex items-center gap-2"
           >
             <Send size={16} />
             {submitting ? '提交中...' : '发表评论'}
           </button>
         </form>
 
-        <div className="space-y-6">
+        <div className="space-y-4">
           {comments.map((comment) => (
-            <div key={comment.id} className="bg-white rounded-lg p-4 shadow">
+            <div key={comment.id} className="glass-card p-4">
               <div className="flex items-center justify-between mb-2">
-                <span className="font-semibold">{comment.author_name}</span>
-                <span className="text-sm text-gray-500">
+                <span className="font-semibold text-purple-400">{comment.author_name}</span>
+                <span className="text-sm text-zinc-500">
                   {format(new Date(comment.created_at), 'PP', { locale: zhCN })}
                 </span>
               </div>
-              <p className="text-gray-700">{comment.content}</p>
+              <p className="text-zinc-300">{comment.content}</p>
             </div>
           ))}
         </div>
 
         {comments.length === 0 && (
-          <p className="text-center text-gray-500 py-8">暂无评论，来发表第一条评论吧！</p>
+          <p className="text-center text-zinc-500 py-8">暂无评论，来发表第一条评论吧！</p>
         )}
       </section>
     </article>

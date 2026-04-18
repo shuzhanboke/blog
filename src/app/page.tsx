@@ -18,53 +18,74 @@ export default async function Home() {
   const posts = await getPosts()
 
   return (
-    <div>
-      <section className="text-center py-16">
-        <h1 className="text-5xl font-bold mb-4 text-gray-900">欢迎来到我的博客</h1>
-        <p className="text-xl text-gray-600 mb-8">分享技术、记录生活、传递价值</p>
-        <Link
-          href="/blog"
-          className="inline-block bg-primary-600 text-white px-8 py-3 rounded-lg hover:bg-primary-700 transition"
-        >
-          浏览全部文章
-        </Link>
+    <div className="animate-fade-in">
+      <section className="text-center py-20">
+        <div className="inline-block px-4 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/30 text-purple-400 text-sm mb-6">
+          Welcome to my digital garden
+        </div>
+        <h1 className="text-5xl md:text-7xl font-bold mb-6">
+          <span className="gradient-text">代码改变世界</span>
+        </h1>
+        <p className="text-xl text-zinc-400 mb-10 max-w-2xl mx-auto">
+          分享技术点滴，记录开发历程，探索代码的魅力
+        </p>
+        <div className="flex gap-4 justify-center">
+          <Link
+            href="/blog"
+            className="glow-button"
+          >
+            浏览文章
+          </Link>
+          <Link
+            href="/about"
+            className="px-8 py-3 rounded-lg border border-zinc-700 hover:border-purple-500/50 transition"
+          >
+            了解更多
+          </Link>
+        </div>
       </section>
 
-      <section>
-        <h2 className="text-3xl font-bold mb-8 text-center">最新文章</h2>
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <section className="mt-16">
+        <div className="flex items-center justify-between mb-8">
+          <h2 className="text-2xl font-bold">
+            <span className="gradient-text">最新文章</span>
+          </h2>
+          <Link href="/blog" className="text-purple-400 hover:text-purple-300 transition">
+            查看全部 →
+          </Link>
+        </div>
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {posts.map((post) => (
             <article
               key={post.id}
-              className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition"
+              className="post-card"
             >
-              {post.cover_image && (
-                <div className="h-48 overflow-hidden">
-                  <img
-                    src={post.cover_image}
-                    alt={post.title}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              )}
-              <div className="p-6">
-                <h3 className="text-xl font-semibold mb-2">
-                  <Link href={`/blog/${post.slug}`} className="hover:text-primary-600">
-                    {post.title}
-                  </Link>
-                </h3>
-                <p className="text-gray-600 mb-4 line-clamp-3">
-                  {post.excerpt || post.content.slice(0, 150) + '...'}
-                </p>
-                <div className="text-sm text-gray-500">
-                  {format(new Date(post.created_at), 'PPP', { locale: zhCN })}
-                </div>
+              <div className="flex items-center gap-2 text-xs text-zinc-500 mb-3">
+                <span>📅</span>
+                <time>{format(new Date(post.created_at), 'PPP', { locale: zhCN })}</time>
               </div>
+              <h3 className="text-lg font-semibold mb-2">
+                <Link href={`/blog/${post.slug}`} className="hover:text-purple-400 transition">
+                  {post.title}
+                </Link>
+              </h3>
+              <p className="text-zinc-400 text-sm line-clamp-3 mb-4">
+                {post.excerpt || post.content.slice(0, 100) + '...'}
+              </p>
+              <Link
+                href={`/blog/${post.slug}`}
+                className="text-sm text-purple-400 hover:text-purple-300 transition inline-flex items-center gap-1"
+              >
+                阅读全文 <span>→</span>
+              </Link>
             </article>
           ))}
         </div>
         {posts.length === 0 && (
-          <p className="text-center text-gray-500 py-12">暂无文章，敬请期待！</p>
+          <div className="text-center py-16">
+            <div className="text-6xl mb-4">🔍</div>
+            <p className="text-zinc-500">暂无文章，敬请期待！</p>
+          </div>
         )}
       </section>
     </div>
