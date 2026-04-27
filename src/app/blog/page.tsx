@@ -1,7 +1,8 @@
 import Link from 'next/link'
-import { supabase } from '@/lib/supabase'
 import { format } from 'date-fns'
 import { zhCN } from 'date-fns/locale'
+import { supabase } from '@/lib/supabase'
+import { staticPosts } from '@/lib/static-posts'
 
 async function getPosts() {
   const { data } = await supabase
@@ -14,7 +15,10 @@ async function getPosts() {
 }
 
 export default async function BlogPage() {
-  const posts = await getPosts()
+  const dbPosts = await getPosts()
+  const posts = [...staticPosts, ...dbPosts].sort(
+    (left, right) => new Date(right.created_at).getTime() - new Date(left.created_at).getTime()
+  )
 
   return (
     <div className="animate-fade-in">
@@ -22,15 +26,12 @@ export default async function BlogPage() {
         <h1 className="text-4xl font-bold mb-4">
           <span className="gradient-text">博客文章</span>
         </h1>
-        <p className="text-zinc-400">共 {posts.length} 篇文章</p>
+        <p className="text-zinc-400">共 {posts.length} 篇已发布文章</p>
       </div>
 
       <div className="space-y-4">
         {posts.map((post) => (
-          <article
-            key={post.id}
-            className="post-card"
-          >
+          <article key={post.id} className="post-card">
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1">
                 <div className="flex items-center gap-2 text-xs text-zinc-500 mb-2">
@@ -43,7 +44,7 @@ export default async function BlogPage() {
                   </Link>
                 </h2>
                 <p className="text-zinc-400 text-sm line-clamp-2">
-                  {post.excerpt || post.content.slice(0, 200) + '...'}
+                  {post.excerpt || `${post.content.slice(0, 200)}...`}
                 </p>
               </div>
               <Link
@@ -59,8 +60,8 @@ export default async function BlogPage() {
 
       {posts.length === 0 && (
         <div className="text-center py-16">
-          <div className="text-6xl mb-4">📝</div>
-          <p className="text-zinc-500">暂无文章，敬请期待！</p>
+          <div className="text-6xl mb-4">📚</div>
+          <p className="text-zinc-500">暂时还没有文章，稍后再来看看。</p>
         </div>
       )}
     </div>

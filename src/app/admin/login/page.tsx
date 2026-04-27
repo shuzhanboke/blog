@@ -12,8 +12,8 @@ export default function AdminLogin() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleLogin = async (event: React.FormEvent) => {
+    event.preventDefault()
     setError('')
     setLoading(true)
 
@@ -28,7 +28,7 @@ export default function AdminLogin() {
       } else if (data.user) {
         router.push('/admin')
       }
-    } catch (err) {
+    } catch {
       setError('登录失败，请重试')
     } finally {
       setLoading(false)
@@ -62,7 +62,7 @@ export default function AdminLogin() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-lg focus:border-purple-500 focus:outline-none transition"
-              placeholder="••••••••"
+              placeholder="请输入密码"
               required
             />
           </div>
@@ -73,11 +73,7 @@ export default function AdminLogin() {
             </div>
           )}
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full glow-button"
-          >
+          <button type="submit" disabled={loading} className="w-full glow-button">
             {loading ? '登录中...' : '登录'}
           </button>
         </form>

@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { slugify } from '@/lib/slugify'
 
 interface Post {
   id: string
@@ -37,17 +38,15 @@ function EditPostContent() {
   }, [postId])
 
   const fetchPost = async () => {
-    const { data: { user } } = await supabase.auth.getUser()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
     if (!user) {
       router.push('/admin/login')
       return
     }
 
-    const { data } = await supabase
-      .from('posts')
-      .select('*')
-      .eq('id', postId)
-      .single()
+    const { data } = await supabase.from('posts').select('*').eq('id', postId).single()
 
     if (data) {
       setPost(data)
@@ -61,8 +60,8 @@ function EditPostContent() {
     setLoading(false)
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault()
     setSaving(true)
 
     try {
@@ -95,7 +94,7 @@ function EditPostContent() {
   }
 
   if (!post) {
-    return <div className="text-center py-12">文章不存在</div>
+    return <div className="text-center py-12">文章不存在。</div>
   }
 
   return (
@@ -103,36 +102,42 @@ function EditPostContent() {
       <h1 className="text-3xl font-bold mb-8">编辑文章</h1>
 
       <form onSubmit={handleSubmit} className="max-w-4xl space-y-6">
-        <div className="bg-white rounded-xl shadow p-6 space-y-6">
+        <div className="glass-card rounded-xl p-6 space-y-6">
           <div>
             <label className="block text-sm font-medium mb-2">标题</label>
             <input
               type="text"
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              onChange={(e) => {
+                const value = e.target.value
+                setTitle(value)
+                if (!slug || slug === slugify(title)) {
+                  setSlug(slugify(value))
+                }
+              }}
+              className="w-full px-4 py-2 bg-zinc-900 border border-zinc-800 rounded-lg focus:border-purple-500 focus:outline-none transition"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">Slug (URL标识)</label>
+            <label className="block text-sm font-medium mb-2">Slug（URL 标识）</label>
             <input
               type="text"
               value={slug}
               onChange={(e) => setSlug(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              className="w-full px-4 py-2 bg-zinc-900 border border-zinc-800 rounded-lg focus:border-purple-500 focus:outline-none transition"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">封面图片 URL</label>
+            <label className="block text-sm font-medium mb-2">封面图 URL</label>
             <input
               type="url"
               value={coverImage}
               onChange={(e) => setCoverImage(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              className="w-full px-4 py-2 bg-zinc-900 border border-zinc-800 rounded-lg focus:border-purple-500 focus:outline-none transition"
             />
           </div>
 
@@ -141,16 +146,16 @@ function EditPostContent() {
             <textarea
               value={excerpt}
               onChange={(e) => setExcerpt(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent min-h-[80px]"
+              className="w-full px-4 py-2 bg-zinc-900 border border-zinc-800 rounded-lg focus:border-purple-500 focus:outline-none transition min-h-[80px]"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">内容 (Markdown)</label>
+            <label className="block text-sm font-medium mb-2">内容（Markdown）</label>
             <textarea
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent min-h-[400px] font-mono"
+              className="w-full px-4 py-2 bg-zinc-900 border border-zinc-800 rounded-lg focus:border-purple-500 focus:outline-none transition min-h-[400px] font-mono"
               required
             />
           </div>
@@ -169,17 +174,13 @@ function EditPostContent() {
         </div>
 
         <div className="flex gap-4">
-          <button
-            type="submit"
-            disabled={saving}
-            className="bg-primary-600 text-white px-6 py-2 rounded-lg hover:bg-primary-700 disabled:opacity-50"
-          >
+          <button type="submit" disabled={saving} className="glow-button disabled:opacity-50">
             {saving ? '保存中...' : '保存修改'}
           </button>
           <button
             type="button"
             onClick={() => router.push('/admin')}
-            className="text-gray-600 px-6 py-2 rounded-lg hover:bg-gray-100"
+            className="px-6 py-2 rounded-lg border border-zinc-700 text-zinc-400 hover:border-zinc-500 transition"
           >
             取消
           </button>

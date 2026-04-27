@@ -41,18 +41,38 @@ CREATE TABLE pages (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- 创建 AI 日报运行记录表
+CREATE TABLE ai_digest_runs (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  run_date DATE NOT NULL,
+  status TEXT NOT NULL,
+  mode TEXT NOT NULL,
+  trigger_type TEXT NOT NULL,
+  triggered_by TEXT,
+  item_count INTEGER DEFAULT 0,
+  post_slug TEXT,
+  error_message TEXT,
+  source_results JSONB DEFAULT '[]'::jsonb,
+  started_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  finished_at TIMESTAMP WITH TIME ZONE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 -- 创建索引
 CREATE INDEX idx_posts_slug ON posts(slug);
 CREATE INDEX idx_posts_published ON posts(published);
 CREATE INDEX idx_comments_post_id ON comments(post_id);
 CREATE INDEX idx_likes_post_id ON likes(post_id);
 CREATE INDEX idx_pages_slug ON pages(slug);
+CREATE INDEX idx_ai_digest_runs_run_date ON ai_digest_runs(run_date);
+CREATE INDEX idx_ai_digest_runs_created_at ON ai_digest_runs(created_at DESC);
 
 -- 启用行级安全
 ALTER TABLE posts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE comments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE likes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE pages ENABLE ROW LEVEL SECURITY;
+ALTER TABLE ai_digest_runs ENABLE ROW LEVEL SECURITY;
 
 -- 公开访问策略
 CREATE POLICY "Public posts are viewable by everyone" ON posts
@@ -83,5 +103,23 @@ CREATE POLICY "Authenticated users can update posts" ON posts
 CREATE POLICY "Authenticated users can delete posts" ON posts
   FOR DELETE USING (auth.role() = 'authenticated');
 
+CREATE POLICY "Authenticated users can view all posts" ON posts
+  FOR SELECT USING (auth.role() = 'authenticated');
+
+CREATE POLICY "Authenticated users can delete comments" ON comments
+  FOR DELETE USING (auth.role() = 'authenticated');
+
+CREATE POLICY "Authenticated users can view all likes" ON likes
+  FOR SELECT USING (auth.role() = 'authenticated');
+
 CREATE POLICY "Authenticated users can manage pages" ON pages
   FOR ALL USING (auth.role() = 'authenticated');
+
+CREATE POLICY "Authenticated users can view digest runs" ON ai_digest_runs
+  FOR SELECT USING (auth.role() = 'authenticated');
+
+CREATE POLICY "Authenticated users can insert digest runs" ON ai_digest_runs
+  FOR INSERT WITH CHECK (auth.role() = 'authenticated');
+
+CREATE POLICY "Authenticated users can update digest runs" ON ai_digest_runs
+  FOR UPDATE USING (auth.role() = 'authenticated');

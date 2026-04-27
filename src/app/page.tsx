@@ -1,7 +1,8 @@
 import Link from 'next/link'
-import { supabase } from '@/lib/supabase'
 import { format } from 'date-fns'
 import { zhCN } from 'date-fns/locale'
+import { supabase } from '@/lib/supabase'
+import { staticPosts } from '@/lib/static-posts'
 
 async function getPosts() {
   const { data } = await supabase
@@ -15,38 +16,58 @@ async function getPosts() {
 }
 
 export default async function Home() {
-  const posts = await getPosts()
+  const dbPosts = await getPosts()
+  const posts = [...staticPosts, ...dbPosts]
+    .sort((left, right) => new Date(right.created_at).getTime() - new Date(left.created_at).getTime())
+    .slice(0, 6)
 
   return (
     <div className="animate-fade-in">
-      <section className="text-center py-20">
-        <div className="inline-block px-4 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/30 text-purple-400 text-sm mb-6">
-          Welcome to my digital garden
+      <section className="hero-shell hero-shell--minimal">
+        <div className="hero-panel hero-panel--content">
+          <div className="hero-badge">
+            <span className="hero-badge__dot" />
+            AI Code Desk
+          </div>
+          <h1 className="mt-6 text-5xl md:text-7xl font-bold">
+            <span className="gradient-text">代码改变世界</span>
+          </h1>
+          <p className="hero-description">
+            一个围绕 AI 协作开发、博客沉淀和部署验证持续演进的个人工作台。
+          </p>
+          <div className="hero-actions">
+            <Link href="/blog" className="glow-button">
+              浏览文章
+            </Link>
+            <Link href="/about" className="secondary-button">
+              了解更多
+            </Link>
+          </div>
         </div>
-        <h1 className="text-5xl md:text-7xl font-bold mb-6">
-          <span className="gradient-text">代码改变世界</span>
-        </h1>
-        <p className="text-xl text-zinc-400 mb-10 max-w-2xl mx-auto">
-          分享技术点滴，记录开发历程，探索代码的魅力
-        </p>
-        <div className="flex gap-4 justify-center">
-          <Link
-            href="/blog"
-            className="glow-button"
-          >
-            浏览文章
-          </Link>
-          <Link
-            href="/about"
-            className="px-8 py-3 rounded-lg border border-zinc-700 hover:border-purple-500/50 transition"
-          >
-            了解更多
-          </Link>
+
+        <div className="hero-panel hero-panel--compact">
+          <div className="terminal-card terminal-card--compact">
+            <div className="terminal-card__topbar">
+              <span className="terminal-card__title">workspace://blog-system</span>
+              <span className="terminal-card__status">READY</span>
+            </div>
+            <div className="terminal-card__body">
+              <div className="terminal-command">
+                <span className="terminal-command__prompt">$</span>
+                <span>status --today</span>
+              </div>
+              <div className="terminal-output">
+                <p>· 主题：黑客风 / 文艺风</p>
+                <p>· 能力：文章、评论、部署、AI 日报</p>
+                <p>· 平台：Next.js · Supabase · Vercel</p>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
       <section className="mt-16">
-        <div className="flex items-center justify-between mb-8">
+        <div className="section-heading">
           <h2 className="text-2xl font-bold">
             <span className="gradient-text">最新文章</span>
           </h2>
@@ -54,12 +75,10 @@ export default async function Home() {
             查看全部 →
           </Link>
         </div>
+
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {posts.map((post) => (
-            <article
-              key={post.id}
-              className="post-card"
-            >
+            <article key={post.id} className="post-card">
               <div className="flex items-center gap-2 text-xs text-zinc-500 mb-3">
                 <span>📅</span>
                 <time>{format(new Date(post.created_at), 'PPP', { locale: zhCN })}</time>
@@ -70,7 +89,7 @@ export default async function Home() {
                 </Link>
               </h3>
               <p className="text-zinc-400 text-sm line-clamp-3 mb-4">
-                {post.excerpt || post.content.slice(0, 100) + '...'}
+                {post.excerpt || `${post.content.slice(0, 100)}...`}
               </p>
               <Link
                 href={`/blog/${post.slug}`}
@@ -81,10 +100,11 @@ export default async function Home() {
             </article>
           ))}
         </div>
+
         {posts.length === 0 && (
           <div className="text-center py-16">
-            <div className="text-6xl mb-4">🔍</div>
-            <p className="text-zinc-500">暂无文章，敬请期待！</p>
+            <div className="text-6xl mb-4">📝</div>
+            <p className="text-zinc-500">暂时还没有已发布文章，敬请期待。</p>
           </div>
         )}
       </section>

@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "export:pages": "node scripts/export-github-pages.mjs",
     "start": "next start",
     "lint": "next lint"
   },

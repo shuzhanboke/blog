@@ -1,143 +1,99 @@
 # 博客部署指南
 
-本指南将帮助你在 Supabase 上配置数据库并部署到 GitHub Pages。
+本指南用于把博客系统配置到 `Supabase + Vercel`。
 
-## 第一部分：配置 Supabase
+## 一、配置 Supabase
 
-### 步骤 1: 创建 Supabase 项目
+### 1. 创建项目
+1. 登录 `https://supabase.com`
+2. 新建项目
+3. 等待数据库初始化完成
 
-1. 访问 [supabase.com](https://supabase.com)
-2. 点击 "New Project" 创建新项目
-3. 填写项目信息（名称、数据库密码等）
-4. 等待项目创建完成（约2分钟）
+### 2. 获取密钥
+在 `Settings -> API` 中记录：
+- `Project URL`
+- `anon public key`
+- `service_role secret key`（仅服务端使用，不要暴露到前端）
 
-### 步骤 2: 获取 API 密钥
+### 3. 创建数据表
+在 `SQL Editor` 中运行 `supabase/schema.sql`。
 
-1. 进入项目后，点击左侧 "Settings"
-2. 点击 "API"
-3. 复制以下信息：
-   - **Project URL**: `https://xxxxx.supabase.co`
-   - **anon public key**: `eyJhbGc...`（公开密钥）
-   - **service_role secret key**: `eyJhbGc...`（私密密钥，仅服务器使用）
+### 4. 配置认证
+在 `Authentication -> URL Configuration` 中添加：
+- `http://localhost:3000`
+- 你的 Vercel 域名，例如 `https://blog-system-rose.vercel.app`
 
-### 步骤 3: 创建数据库表
+### 5. 创建管理员账号
+在 `Authentication -> Users` 中添加后台登录账号。
 
-1. 在 Supabase Dashboard 点击左侧 "SQL Editor"
-2. 点击 "New Query"
-3. 复制 `supabase/schema.sql` 的内容并粘贴
-4. 点击 "Run" 执行
+## 二、本地开发
 
-### 步骤 4: 配置认证
-
-1. 进入 "Authentication" > "Settings"
-2. 在 "Site URL" 填写你的博客地址
-   - 本地开发: `http://localhost:3000`
-   - GitHub Pages: `https://shuzhanboke.github.io/blog`
-3. 在 "Redirect URLs" 添加:
-   - `http://localhost:3000/**`
-   - `https://shuzhanboke.github.io/blog/**`
-
-### 步骤 5: 创建管理员用户
-
-1. 进入 "Authentication" > "Users"
-2. 点击 "Add User"
-3. 填写邮箱和密码
-4. 点击 "Create user"
-
----
-
-## 第二部分：配置本地环境
-
-### 步骤 1: 克隆仓库
-
-```bash
-git clone https://github.com/shuzhanboke/blog.git
-cd blog
-```
-
-### 步骤 2: 安装依赖
-
+### 1. 安装依赖
 ```bash
 npm install
 ```
 
-### 步骤 3: 配置环境变量
-
-创建 `.env.local` 文件：
+### 2. 配置环境变量
+创建 `.env.local`：
 
 ```env
-NEXT_PUBLIC_SUPABASE_URL=https://你的项目.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=你的anon公钥
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
 ```
 
-### 步骤 4: 本地测试
+如果需要调用导入接口，再额外配置：
 
+```env
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+```
+
+### 3. 本地运行
 ```bash
 npm run dev
 ```
 
-访问 http://localhost:3000 查看博客。
+打开 `http://localhost:3000` 进行验证。
 
----
+## 三、部署到 Vercel
 
-## 第三部分：部署到 GitHub Pages
-
-### 步骤 1: 添加 GitHub Secrets
-
-1. 在 GitHub 仓库页面，点击 "Settings" > "Secrets and variables" > "Actions"
-2. 点击 "New repository secret"
-3. 添加以下 secrets：
-   - `NEXT_PUBLIC_SUPABASE_URL`: 你的 Supabase 项目 URL
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`: 你的 anon 公钥
-
-### 步骤 2: 启用 GitHub Pages
-
-1. 进入 "Settings" > "Pages"
-2. 在 "Source" 下选择 "GitHub Actions"
-
-### 步骤 3: 推送代码
-
+### 1. 创建或关联项目
 ```bash
-git add .
-git commit -m "feat: 准备部署"
-git push
+vercel link
 ```
 
-GitHub Actions 将自动构建并部署。
+### 2. 配置环境变量
+至少配置以下变量：
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 
-### 步骤 4: 验证部署
+如需使用文章导入接口，再配置：
+- `SUPABASE_SERVICE_ROLE_KEY`
 
-1. 访问 `https://shuzhanboke.github.io/blog`
-2. 访问 `/admin/login` 使用管理员账号登录
-
----
-
-## 常见问题
-
-### Q: 评论功能不工作？
-A: 确保 Supabase 的 Row Level Security 策略已正确配置。检查 `supabase/schema.sql` 中的策略。
-
-### Q: 静态导出后动态路由不工作？
-A: 由于使用静态导出，某些动态功能（如评论）需要客户端 JavaScript 执行。确保 Supabase 密钥已正确配置。
-
-### Q: 如何更新文章？
-A: 访问 `/admin/login` 登录后，可新建、编辑、发布/下架文章。
-
----
-
-## 目录结构
-
+### 3. 执行生产部署
+```bash
+vercel deploy --prod
 ```
-blog/
-├── .github/workflows/    # GitHub Actions 配置
-├── scripts/             # 设置脚本
-├── src/
-│   ├── app/            # Next.js 页面
-│   │   ├── admin/      # 管理后台
-│   │   └── blog/       # 博客页面
-│   ├── lib/            # 工具函数
-│   └── types/          # TypeScript 类型
-├── supabase/
-│   └── schema.sql      # 数据库表结构
-└── public/             # 静态资源
-```
+
+## 四、部署后验证
+至少检查以下页面：
+- `/`
+- `/blog`
+- `/about`
+- `/admin/login`
+
+如数据库中已有文章，再检查任意文章详情页是否可正常打开、评论与点赞是否正常工作。
+
+## 五、常见问题
+
+### 1. 页面能打开但没有数据
+- 检查 Supabase 表结构是否已创建
+- 检查 `published = true` 的文章是否存在
+- 检查 Vercel 环境变量是否正确
+
+### 2. 登录失败
+- 检查 Supabase Authentication 中是否存在管理员账号
+- 检查 Site URL 与 Redirect URL 是否包含当前域名
+
+### 3. 导入接口报错
+- 检查是否配置了 `SUPABASE_SERVICE_ROLE_KEY`
+- 确认该密钥只在服务端环境中使用

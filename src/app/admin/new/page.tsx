@@ -3,11 +3,11 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { slugify } from '@/lib/slugify'
 
 export default function NewPost() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
-  const [user, setUser] = useState<any>(null)
 
   const [title, setTitle] = useState('')
   const [slug, setSlug] = useState('')
@@ -21,26 +21,15 @@ export default function NewPost() {
   }, [])
 
   const checkUser = async () => {
-    const { data: { user } } = await supabase.auth.getUser()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
     if (!user) {
       router.push('/admin/login')
-    } else {
-      setUser(user)
     }
   }
 
-  const generateSlug = (text: string) => {
-    return text
-      .toLowerCase()
-      .replace(/[\u4e00-\u9fa5]+/g, (match) => {
-        const pinyinMap: Record<string, string> = {}
-        return match
-      })
-      .replace(/[^\w\s-]/g, '')
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-')
-      .trim()
-  }
+  const generateSlug = (text: string) => slugify(text)
 
   const handleTitleChange = (value: string) => {
     setTitle(value)
@@ -49,8 +38,8 @@ export default function NewPost() {
     }
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault()
     setLoading(true)
 
     try {
@@ -79,38 +68,38 @@ export default function NewPost() {
       <h1 className="text-3xl font-bold mb-8">新建文章</h1>
 
       <form onSubmit={handleSubmit} className="max-w-4xl space-y-6">
-        <div className="bg-white rounded-xl shadow p-6 space-y-6">
+        <div className="glass-card rounded-xl p-6 space-y-6">
           <div>
             <label className="block text-sm font-medium mb-2">标题</label>
             <input
               type="text"
               value={title}
               onChange={(e) => handleTitleChange(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-              placeholder="文章标题"
+              className="w-full px-4 py-2 bg-zinc-900 border border-zinc-800 rounded-lg focus:border-purple-500 focus:outline-none transition"
+              placeholder="输入文章标题"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">Slug (URL标识)</label>
+            <label className="block text-sm font-medium mb-2">Slug（URL 标识）</label>
             <input
               type="text"
               value={slug}
               onChange={(e) => setSlug(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              className="w-full px-4 py-2 bg-zinc-900 border border-zinc-800 rounded-lg focus:border-purple-500 focus:outline-none transition"
               placeholder="article-slug"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">封面图片 URL</label>
+            <label className="block text-sm font-medium mb-2">封面图 URL</label>
             <input
               type="url"
               value={coverImage}
               onChange={(e) => setCoverImage(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              className="w-full px-4 py-2 bg-zinc-900 border border-zinc-800 rounded-lg focus:border-purple-500 focus:outline-none transition"
               placeholder="https://example.com/image.jpg"
             />
           </div>
@@ -120,18 +109,18 @@ export default function NewPost() {
             <textarea
               value={excerpt}
               onChange={(e) => setExcerpt(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent min-h-[80px]"
+              className="w-full px-4 py-2 bg-zinc-900 border border-zinc-800 rounded-lg focus:border-purple-500 focus:outline-none transition min-h-[80px]"
               placeholder="文章摘要（可选）"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">内容 (Markdown)</label>
+            <label className="block text-sm font-medium mb-2">内容（Markdown）</label>
             <textarea
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent min-h-[400px] font-mono"
-              placeholder="使用 Markdown 格式编写文章内容..."
+              className="w-full px-4 py-2 bg-zinc-900 border border-zinc-800 rounded-lg focus:border-purple-500 focus:outline-none transition min-h-[400px] font-mono"
+              placeholder="使用 Markdown 编写文章内容..."
               required
             />
           </div>
@@ -150,17 +139,13 @@ export default function NewPost() {
         </div>
 
         <div className="flex gap-4">
-          <button
-            type="submit"
-            disabled={loading}
-            className="bg-primary-600 text-white px-6 py-2 rounded-lg hover:bg-primary-700 disabled:opacity-50"
-          >
+          <button type="submit" disabled={loading} className="glow-button disabled:opacity-50">
             {loading ? '保存中...' : '保存文章'}
           </button>
           <button
             type="button"
             onClick={() => router.push('/admin')}
-            className="text-gray-600 px-6 py-2 rounded-lg hover:bg-gray-100"
+            className="px-6 py-2 rounded-lg border border-zinc-700 text-zinc-400 hover:border-zinc-500 transition"
           >
             取消
           </button>
