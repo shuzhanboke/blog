@@ -8,6 +8,7 @@ const __dirname = path.dirname(__filename)
 const projectRoot = path.resolve(__dirname, '..')
 const outDir = path.join(projectRoot, 'out')
 const siteUrl = 'https://blog.shuzhan.one'
+const mainSiteUrl = 'https://blog-system-rose.vercel.app'
 
 async function readEnvFile(filePath) {
   try {
@@ -50,7 +51,7 @@ function formatDate(dateString) {
 }
 
 function escapeHtml(value = '') {
-  return value
+  return String(value)
     .replaceAll('&', '&amp;')
     .replaceAll('<', '&lt;')
     .replaceAll('>', '&gt;')
@@ -66,7 +67,7 @@ function renderInline(text) {
     .replace(/\*([^*]+)\*/g, '<em>$1</em>')
 }
 
-function markdownToHtml(markdown) {
+function markdownToHtml(markdown = '') {
   const lines = markdown.replace(/\r\n/g, '\n').split('\n')
   let html = ''
   let inList = false
@@ -143,30 +144,39 @@ function markdownToHtml(markdown) {
   return html
 }
 
+function extractField(block, field) {
+  const singleQuoted = block.match(new RegExp(`${field}:\\s*'([^']*)'`))
+  if (singleQuoted) return singleQuoted[1]
+
+  const templateLiteral = block.match(new RegExp(`${field}:\\s*\\\`([\\s\\S]*?)\\\``))
+  if (templateLiteral) return templateLiteral[1]
+
+  const nullable = block.match(new RegExp(`${field}:\\s*(null|true|false)`))
+  if (nullable) return nullable[1]
+
+  return ''
+}
+
 async function readStaticPosts() {
   const file = await fs.readFile(path.join(projectRoot, 'src/lib/static-posts.ts'), 'utf8')
-  const match = file.match(/staticPosts:\s*StaticPost\[\]\s*=\s*\[\s*\{([\s\S]*?)\}\s*\]/)
-  if (!match) return []
+  const match = file.match(/export const staticPosts:[\s\S]*?=\s*\[([\s\S]*?)\]\s*$/)
 
-  const block = match[1]
-  const extract = (field) => {
-    const regex = new RegExp(`${field}:\\s*(?:'([^']*)'|\`([\\s\\S]*?)\`)`, 'm')
-    const found = block.match(regex)
-    return found?.[1] || found?.[2] || ''
+  if (!match) {
+    return []
   }
 
-  return [
-    {
-      id: extract('id'),
-      title: extract('title'),
-      slug: extract('slug'),
-      excerpt: extract('excerpt'),
-      content: extract('content'),
-      created_at: extract('created_at'),
-      cover_image: null,
-      published: true,
-    },
-  ]
+  const blocks = match[1].match(/\{[\s\S]*?\n\s*\}/g) || []
+
+  return blocks.map((block) => ({
+    id: extractField(block, 'id'),
+    title: extractField(block, 'title'),
+    slug: extractField(block, 'slug'),
+    excerpt: extractField(block, 'excerpt'),
+    content: extractField(block, 'content'),
+    created_at: extractField(block, 'created_at') || '2026-04-18T00:00:00.000Z',
+    cover_image: extractField(block, 'cover_image') === 'null' ? null : extractField(block, 'cover_image'),
+    published: extractField(block, 'published') !== 'false',
+  }))
 }
 
 async function fetchPublishedPosts() {
@@ -181,9 +191,20 @@ async function fetchPublishedPosts() {
   }
 
   const staticPosts = await readStaticPosts()
-  return [...staticPosts, ...(data || [])]
-    .filter((post) => post.slug)
-    .sort((left, right) => new Date(right.created_at).getTime() - new Date(left.created_at).getTime())
+  const merged = [...(data || []), ...staticPosts]
+  const deduped = new Map()
+
+  for (const post of merged) {
+    if (post?.slug) {
+      deduped.set(post.slug, post)
+    }
+  }
+
+  return [...deduped.values()].sort((left, right) => new Date(right.created_at).getTime() - new Date(left.created_at).getTime())
+}
+
+function postHref(slug) {
+  return `/blog/${slug}.html`
 }
 
 function renderShell({ title, description, body }) {
@@ -195,6 +216,7 @@ function renderShell({ title, description, body }) {
     <title>${escapeHtml(title)}</title>
     <meta name="description" content="${escapeHtml(description)}" />
     <link rel="stylesheet" href="/assets/site.css" />
+    <link rel="canonical" href="${siteUrl}" />
   </head>
   <body>
     <div class="page-shell">
@@ -204,7 +226,7 @@ function renderShell({ title, description, body }) {
           <a href="/">首页</a>
           <a href="/blog/">文章</a>
           <a href="/about/">关于</a>
-          <a href="https://blog-system-rose.vercel.app/admin" target="_blank" rel="noreferrer">管理后台</a>
+          <a href="${mainSiteUrl}/admin" target="_blank" rel="noreferrer">管理后台</a>
         </nav>
       </header>
       <main class="site-main">
@@ -230,7 +252,7 @@ function renderIndex(posts) {
         <p>这是主站内容的 GitHub Pages 镜像版本，用于在自定义域名下持续展示当前博客内容。</p>
         <div class="hero-actions">
           <a class="primary-btn" href="/blog/">浏览文章</a>
-          <a class="secondary-btn" href="https://blog-system-rose.vercel.app" target="_blank" rel="noreferrer">访问主站</a>
+          <a class="secondary-btn" href="${mainSiteUrl}" target="_blank" rel="noreferrer">访问主站</a>
         </div>
       </section>
       <section class="content-section">
@@ -244,8 +266,8 @@ function renderIndex(posts) {
               (post) => `
               <article class="post-card">
                 <div class="post-meta">${formatDate(post.created_at)}</div>
-                <h3><a href="/blog/${post.slug}/">${escapeHtml(post.title)}</a></h3>
-                <p>${escapeHtml(post.excerpt || `${post.content.slice(0, 120)}...`)}</p>
+                <h3><a href="${postHref(post.slug)}">${escapeHtml(post.title)}</a></h3>
+                <p>${escapeHtml(post.excerpt || `${String(post.content || '').slice(0, 120)}...`)}</p>
               </article>
             `
             )
@@ -273,10 +295,10 @@ function renderBlogIndex(posts) {
               <article class="stack-card">
                 <div>
                   <div class="post-meta">${formatDate(post.created_at)}</div>
-                  <h3><a href="/blog/${post.slug}/">${escapeHtml(post.title)}</a></h3>
-                  <p>${escapeHtml(post.excerpt || `${post.content.slice(0, 180)}...`)}</p>
+                  <h3><a href="${postHref(post.slug)}">${escapeHtml(post.title)}</a></h3>
+                  <p>${escapeHtml(post.excerpt || `${String(post.content || '').slice(0, 180)}...`)}</p>
                 </div>
-                <a class="read-link" href="/blog/${post.slug}/">阅读全文 →</a>
+                <a class="read-link" href="${postHref(post.slug)}">阅读全文 →</a>
               </article>
             `
             )
@@ -323,6 +345,20 @@ function renderPost(post) {
   })
 }
 
+function renderNotFound() {
+  return `<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="refresh" content="0; url=/" />
+    <title>Redirecting...</title>
+  </head>
+  <body>
+    <p>正在跳转到首页… <a href="/">点击这里</a></p>
+  </body>
+</html>`
+}
+
 async function writeFile(relativePath, content) {
   const outputPath = path.join(outDir, relativePath)
   await fs.mkdir(path.dirname(outputPath), { recursive: true })
@@ -338,11 +374,14 @@ async function main() {
   await writeFile('blog/index.html', renderBlogIndex(posts))
   await writeFile('about/index.html', renderAbout())
   await writeFile('assets/site.css', css)
+  await writeFile('404.html', renderNotFound())
   await writeFile('CNAME', 'blog.shuzhan.one')
   await writeFile('.nojekyll', '')
 
   for (const post of posts) {
-    await writeFile(`blog/${post.slug}/index.html`, renderPost(post))
+    const html = renderPost(post)
+    await writeFile(`blog/${post.slug}.html`, html)
+    await writeFile(`blog/${post.slug}/index.html`, html)
   }
 
   console.log(`Exported ${posts.length} posts to ${outDir}`)
