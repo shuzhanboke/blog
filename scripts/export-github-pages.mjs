@@ -204,7 +204,7 @@ async function fetchPublishedPosts() {
 }
 
 function postHref(slug) {
-  return `/blog/${slug}.html`
+  return `/${slug}.html`
 }
 
 function renderShell({ title, description, body }) {
@@ -380,6 +380,7 @@ async function main() {
 
   for (const post of posts) {
     const html = renderPost(post)
+    await writeFile(`${post.slug}.html`, html)
     await writeFile(`blog/${post.slug}.html`, html)
     await writeFile(`blog/${post.slug}/index.html`, html)
   }
